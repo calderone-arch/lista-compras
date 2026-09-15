@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1C2A20">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lista da Casa">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Lista da Casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,6 +215,8 @@
           <div class="role-tag" id="role-tag"></div>
         </div>
         <div class="btns">
+          <button class="switch-btn" id="notif-btn">🔔 avisos</button>
+          <button class="switch-btn" id="fullscreen-btn">⤢ tela cheia</button>
           <button class="switch-btn" id="refresh-btn">atualizar</button>
           <button class="switch-btn" id="switch-role">trocar perfil</button>
         </div>
@@ -238,6 +248,9 @@
   var BIN_ID = "6aa88097ffd5d16053072bd3";
   var ACCESS_KEY = "$2a$10$MH7BQnixsh0Pxih/NNqFle9rNQOwUKC71SJ5iS69ihH/l7LkZ2Rx.";
   var API_BASE = "https://api.jsonbin.io/v3/b/" + BIN_ID;
+  var SUBS_BIN_ID = "6aa8b01fffd5d1605307c372";
+  var SUBS_API = "https://api.jsonbin.io/v3/b/" + SUBS_BIN_ID;
+  var VAPID_PUBLIC = "BAECmivetXT3UdBHGMqs0lEd8pHmiJHD5A6GFLB6QkCS7rEHiNBN7EPFAOCYUYmQVxN2RpKm534Q92wDssUwN_E";
   var ROLE_KEY = "papel-do-usuario-lista-casa";
   var DEFAULTS_VERSION = 2;
 
@@ -877,6 +890,49 @@
   };
   document.getElementById("fab-add").onclick = openAddModal;
   document.getElementById("add-cat-btn").onclick = function(){ openCatModal(null); };
+
+  function urlBase64ToUint8Array(base64String){
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = atob(base64);
+    var arr = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) arr[i] = rawData.charCodeAt(i);
+    return arr;
+  }
+
+  async function enableNotifications(){
+    var btn = document.getElementById("notif-btn");
+    if(!('serviceWorker' in navigator) || !('PushManager' in window)){
+      alert('Esse navegador não suporta notificações push.');
+      return;
+    }
+    try{
+      var reg = await navigator.serviceWorker.register('sw.js');
+      await navigator.serviceWorker.ready;
+      var perm = await Notification.requestPermission();
+      if(perm !== 'granted'){ alert('Permissão de notificação não concedida.'); return; }
+      var sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+      var subJson = sub.toJSON();
+      var res = await fetch(SUBS_API + "/latest", { headers: { "X-Access-Key": ACCESS_KEY } });
+      var json = await res.json();
+      var subs = (json.record && json.record.subs) || [];
+      var exists = subs.some(function(s){ return s.endpoint === subJson.endpoint; });
+      if(!exists){ subs.push(subJson); }
+      await fetch(SUBS_API, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Access-Key": ACCESS_KEY, "X-Bin-Versioning": "false" },
+        body: JSON.stringify({ subs: subs })
+      });
+      btn.textContent = "🔔 avisos ativados";
+    }catch(e){
+      console.error(e);
+      alert("Não foi possível ativar as notificações: " + e.message);
+    }
+  }
+  document.getElementById("notif-btn").onclick = enableNotifications;
 
   async function init(){
     document.getElementById("loading").classList.remove("hidden");
