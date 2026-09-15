@@ -189,6 +189,16 @@
     </button>
   </div>
 
+  <div id="pin-gate" class="hidden" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+    <h1 style="font-family:'Fraunces',serif;font-weight:600;font-size:24px;color:var(--gold-soft);margin:0 0 8px;">Perfil Dispensa</h1>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 20px;">Digite o PIN pra continuar</p>
+    <input type="tel" inputmode="numeric" maxlength="4" id="pin-input"
+      style="width:140px;text-align:center;font-size:26px;letter-spacing:10px;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);">
+    <div id="pin-error" class="hidden" style="color:var(--clay);font-size:13px;margin-top:10px;">PIN incorreto, tenta de novo.</div>
+    <button id="pin-confirm" style="margin-top:18px;background:var(--gold);color:#1B1400;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;">Confirmar</button>
+    <button id="pin-cancel" style="margin-top:10px;background:none;border:none;color:var(--muted);font-size:13px;">Cancelar</button>
+  </div>
+
   <div id="main-view" class="hidden">
     <header>
       <div class="row">
@@ -825,7 +835,34 @@
     enterMain();
   }
 
-  document.getElementById("gate-editor").onclick = function(){ chooseRole("editor"); };
+  var EDITOR_PIN = "0808";
+
+  document.getElementById("gate-editor").onclick = function(){
+    document.getElementById("gate").classList.add("hidden");
+    document.getElementById("pin-gate").classList.remove("hidden");
+    document.getElementById("pin-error").classList.add("hidden");
+    var input = document.getElementById("pin-input");
+    input.value = "";
+    input.focus();
+  };
+  document.getElementById("pin-cancel").onclick = function(){
+    document.getElementById("pin-gate").classList.add("hidden");
+    document.getElementById("gate").classList.remove("hidden");
+  };
+  document.getElementById("pin-confirm").onclick = function(){
+    var input = document.getElementById("pin-input");
+    if(input.value === EDITOR_PIN){
+      document.getElementById("pin-gate").classList.add("hidden");
+      chooseRole("editor");
+    } else {
+      document.getElementById("pin-error").classList.remove("hidden");
+      input.value = "";
+      input.focus();
+    }
+  };
+  document.getElementById("pin-input").addEventListener("keydown", function(e){
+    if(e.key === "Enter") document.getElementById("pin-confirm").click();
+  });
   document.getElementById("gate-mae").onclick = function(){ chooseRole("mae"); };
   document.getElementById("switch-role").onclick = function(){
     document.getElementById("main-view").classList.add("hidden");
