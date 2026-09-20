@@ -1,6 +1,6 @@
 {
-  "name": "Lista da Casa",
-  "short_name": "Lista da Casa",
+  "name": "Dispensa",
+  "short_name": "Dispensa",
   "description": "Lista de compras compartilhada, dividida em categorias e subcategorias.",
   "start_url": ".",
   "scope": ".",
