@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lista da Casa">
+<meta name="apple-mobile-web-app-title" content="Dispensa">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Lista da Casa</title>
+<title>Dispensa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -113,8 +113,8 @@
   .item-name{font-size:15.5px; color:var(--ink); line-height:1.35; font-weight:500;}
   .item.checked .item-name{color:var(--muted); text-decoration:line-through; font-weight:400;}
   .item-note{font-size:12.5px; color:var(--gold-soft); font-style:italic; margin-top:2px;}
-  .item-actions{display:flex; gap:2px; flex-shrink:0;}
-  .icon-btn{background:none; border:none; font-size:15px; color:var(--muted); padding:5px; cursor:pointer;}
+  .item-actions{display:flex; gap:0px; flex-shrink:0;}
+  .icon-btn{background:none; border:none; font-size:13px; color:var(--muted); padding:4px 3px; cursor:pointer;}
   .icon-btn.danger{color:var(--clay);}
 
   .add-item-row{display:flex; align-items:center; gap:8px; padding:10px 16px 14px;}
@@ -453,6 +453,8 @@
     var actions = "";
     if(isEditor){
       actions = '<div class="item-actions">'+
+        '<button class="icon-btn" data-move-item="'+it.id+'" data-dir="up">▲</button>'+
+        '<button class="icon-btn" data-move-item="'+it.id+'" data-dir="down">▼</button>'+
         '<button class="icon-btn" data-edit-item="'+it.id+'">✎</button>'+
         '<button class="icon-btn danger" data-del-item="'+it.id+'">✕</button>'+
         '</div>';
@@ -554,6 +556,23 @@
           if(!name) return;
           var sub = findSub(catId, subId);
           sub.items.push(mkItem(name, false));
+          render(); persist();
+        };
+      });
+
+      document.querySelectorAll("[data-move-item]").forEach(function(el){
+        el.onclick = function(){
+          var id = el.getAttribute("data-move-item");
+          var dir = el.getAttribute("data-dir");
+          var found = findItem(id);
+          if(!found) return;
+          var arr = found.sub.items;
+          var idx = arr.findIndex(function(i){return i.id===id;});
+          var newIdx = dir === "up" ? idx - 1 : idx + 1;
+          if(newIdx < 0 || newIdx >= arr.length) return;
+          var tmp = arr[idx];
+          arr[idx] = arr[newIdx];
+          arr[newIdx] = tmp;
           render(); persist();
         };
       });
