@@ -1,7 +1,7 @@
 self.addEventListener('push', function(event){
   var data = {};
-  try{ data = event.data ? event.data.json() : {}; }catch(e){ data = { title: "Lista da Casa", body: event.data ? event.data.text() : "" }; }
-  var title = data.title || "Lista da Casa";
+  try{ data = event.data ? event.data.json() : {}; }catch(e){ data = { title: "Dispensa Fácil <3", body: event.data ? event.data.text() : "" }; }
+  var title = data.title || "Dispensa Fácil <3";
   var options = {
     body: data.body || "Dar uma olhadinha na Dispensa 🧺",
     icon: "notif-icon.png",

@@ -19,7 +19,7 @@ async function main(){
   }
 
   const payload = JSON.stringify({
-    title: "Lista da Casa",
+    title: "Dispensa Fácil <3",
     body: "Dar uma olhadinha na Dispensa 🧺"
   });
 
