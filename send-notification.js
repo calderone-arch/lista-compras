@@ -8,10 +8,24 @@ const SUBS_API = "https://api.jsonbin.io/v3/b/" + SUBS_BIN_ID;
 
 webpush.setVapidDetails('mailto:lista-da-casa@example.com', VAPID_PUBLIC, VAPID_PRIVATE);
 
-async function main(){
+async function fetchSubsRecord(){
   const res = await fetch(SUBS_API + "/latest", { headers: { "X-Access-Key": ACCESS_KEY } });
-  const json = await res.json();
-  const record = json.record || {};
+  const raw = await res.text();
+  console.log("HTTP status:", res.status, "| Content-Type:", res.headers.get("content-type"));
+  if(!res.ok){
+    console.log("Corpo da resposta (erro):", raw.slice(0, 800));
+    throw new Error("Falha ao buscar inscrições (HTTP " + res.status + ")");
+  }
+  try{
+    return JSON.parse(raw).record || {};
+  }catch(e){
+    console.log("Corpo da resposta (não era JSON):", raw.slice(0, 800));
+    throw new Error("Resposta inesperada da API jsonbin (não é JSON) — veja o log acima.");
+  }
+}
+
+async function main(){
+  const record = await fetchSubsRecord();
   const subs = record.subs || [];
 
   if(subs.length === 0){
